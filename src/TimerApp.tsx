@@ -215,7 +215,7 @@ const TimerApp = () => {
   return (
     <div className="min-h-screen bg-slate-800 p-12">
       <div className="flex flex-col justify-center max-w-4xl mx-auto">
-        <header>
+        <header className="max-w-2xl mx-auto">
           <h1 className="text-slate-200 text-4xl underline text-center mb-6">
             20-20-20 Timer
           </h1>
@@ -227,7 +227,7 @@ const TimerApp = () => {
         </header>
         <main className="py-8">
           <div className="flex flex-col gap-6">
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex flex-col max-w-xs mx-auto gap-2">
                 <label htmlFor="" className="text-slate-200 text-xl">
                   Screen Time
