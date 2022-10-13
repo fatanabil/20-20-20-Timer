@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/20-20-20-Timer/static/css/main.27b2e9d9.css",
+    "main.js": "/20-20-20-Timer/static/js/main.62b9945a.js",
+    "static/js/787.f27277e1.chunk.js": "/20-20-20-Timer/static/js/787.f27277e1.chunk.js",
+    "service-worker.js": "/20-20-20-Timer/service-worker.js",
+    "index.html": "/20-20-20-Timer/index.html",
+    "main.27b2e9d9.css.map": "/20-20-20-Timer/static/css/main.27b2e9d9.css.map",
+    "main.62b9945a.js.map": "/20-20-20-Timer/static/js/main.62b9945a.js.map",
+    "787.f27277e1.chunk.js.map": "/20-20-20-Timer/static/js/787.f27277e1.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.27b2e9d9.css",
+    "static/js/main.62b9945a.js"
+  ]
+}
