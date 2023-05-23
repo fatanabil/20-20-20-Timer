@@ -89,8 +89,36 @@ const TimerApp = () => {
     }
   }, [TimerConf.mode, TimerConf.secondsLeft]);
 
+  useEffect(() => {
+    if (TimerConf.secondsLeft === 0 && TimerConf.mode === "screen") {
+      showNotification(
+        "Break time",
+        `Look to an object for ${TimerConf.breakTime} seconds`
+      );
+    } else if (TimerConf.secondsLeft === 0 && TimerConf.mode === "break") {
+      if (TimerConf.cyclesLeft + 1 === TimerConf.cycle) {
+        console.log("Cycles Done!!, please start again");
+        showNotification("Cycles Done", "You can start the timer again");
+      } else {
+        showNotification("Work Time", "You can continue your work");
+      }
+    }
+  }, [TimerConf.secondsLeft]);
+
+  useEffect(() => {
+    Notification.requestPermission();
+  }, []);
+
+  const showNotification = (title: string, body: string) => {
+    const notif = new Notification(title, { body });
+
+    return setTimeout(() => {
+      notif.close();
+    }, 5000);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-800 p-12">
+    <div className="min-h-screen bg-slate-800 p-12 pb-0">
       <div className="flex flex-col justify-center max-w-4xl mx-auto">
         <header className="max-w-2xl mx-auto">
           <h1 className="text-slate-200 text-4xl underline text-center mb-6">
