@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-input::-webkit-inner-spin-button,
+/* input::-webkit-inner-spin-button,
 input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   appearance: none;
@@ -12,4 +12,4 @@ input::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: none;
-}
+} */
