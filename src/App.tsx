@@ -1,25 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import TimerApp from "./TimerApp";
+import TimerContext from "./TimerContext";
+import { useState, useEffect } from "react";
 
 function App() {
+  const [screenTime, setScreenTime] = useState(20);
+  const [breakTime, setBreakTime] = useState(20);
+  const [cycle, setCycle] = useState(1);
+  const [mode, setMode] = useState("screen");
+  const [secondsLeft, setSecondsLeft] = useState(screenTime * 60);
+  const [cyclesLeft, setCyclesLeft] = useState(0);
+
+  useEffect(() => {
+    setSecondsLeft(screenTime * 60);
+  }, [screenTime]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <TimerContext.Provider
+      value={{
+        screenTime,
+        setScreenTime,
+        breakTime,
+        setBreakTime,
+        cycle,
+        setCycle,
+        mode,
+        setMode,
+        secondsLeft,
+        setSecondsLeft,
+        cyclesLeft,
+        setCyclesLeft,
+      }}
+    >
+      <TimerApp />;
+    </TimerContext.Provider>
   );
 }
 
