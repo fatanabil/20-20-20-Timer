@@ -1,16 +1,18 @@
 {
   "files": {
-    "main.css": "/20-20-20-Timer/static/css/main.fd9a81eb.css",
-    "main.js": "/20-20-20-Timer/static/js/main.5236451e.js",
+    "main.css": "/20-20-20-Timer/static/css/main.a9667271.css",
+    "main.js": "/20-20-20-Timer/static/js/main.129c7482.js",
+    "static/js/182.2fbe09cb.chunk.js": "/20-20-20-Timer/static/js/182.2fbe09cb.chunk.js",
     "static/js/787.f27277e1.chunk.js": "/20-20-20-Timer/static/js/787.f27277e1.chunk.js",
     "service-worker.js": "/20-20-20-Timer/service-worker.js",
     "index.html": "/20-20-20-Timer/index.html",
-    "main.fd9a81eb.css.map": "/20-20-20-Timer/static/css/main.fd9a81eb.css.map",
-    "main.5236451e.js.map": "/20-20-20-Timer/static/js/main.5236451e.js.map",
+    "main.a9667271.css.map": "/20-20-20-Timer/static/css/main.a9667271.css.map",
+    "main.129c7482.js.map": "/20-20-20-Timer/static/js/main.129c7482.js.map",
+    "182.2fbe09cb.chunk.js.map": "/20-20-20-Timer/static/js/182.2fbe09cb.chunk.js.map",
     "787.f27277e1.chunk.js.map": "/20-20-20-Timer/static/js/787.f27277e1.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.fd9a81eb.css",
-    "static/js/main.5236451e.js"
+    "static/css/main.a9667271.css",
+    "static/js/main.129c7482.js"
   ]
 }
