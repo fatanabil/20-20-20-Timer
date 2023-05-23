@@ -1,216 +1,93 @@
-import { useCallback, useEffect, useState } from "react";
+import { FiPause, FiPlay, FiRefreshCw } from "react-icons/fi";
 import Button from "./components/Button";
 import Input from "./components/Input";
-import { FiPlay, FiPause, FiRefreshCw } from "react-icons/fi";
+import { useEffect, useState, useContext, useMemo } from "react";
+import TimerContext from "./TimerContext";
 
 const TimerApp = () => {
-  const [screenTime, setScreenTime] = useState<number>(20);
-  const [breakTime, setBreakTime] = useState<number>(20);
-  const [cycle, setCycle] = useState<number>(3);
-  const [runST, setRunST] = useState<number>(() => screenTime * 60);
-  const [runBT, setRunBT] = useState<number>(() => breakTime);
-  const [runCyc, setRunCyc] = useState<number>(0);
-  const [start, setStart] = useState<boolean>(false);
-  const [notifPermission, setNotifPermission] = useState<string>("");
+  const TimerConf = useContext<any>(TimerContext);
+  const [isPaused, setIsPaused] = useState(true);
 
-  const addScreenTime = () => {
-    setScreenTime((prev: number) => {
-      if (prev < 60) {
-        return prev + 20;
-      }
-      return prev;
-    });
-  };
-
-  const minScreenTime = () => {
-    setScreenTime((prev: number) => {
-      if (prev > 20) {
-        return prev - 20;
-      }
-      return prev;
-    });
-  };
-
-  const addBreakTime = () => {
-    setBreakTime((prev: number) => {
-      if (prev < 40) {
-        return prev + 10;
-      }
-      return prev;
-    });
-  };
-
-  const minBreakTime = () => {
-    setBreakTime((prev: number) => {
-      if (prev > 20) {
-        return prev - 10;
-      }
-      return prev;
-    });
-  };
-
-  const addCycle = () => {
-    setCycle((prev: number) => {
-      if (prev < 5) {
-        return prev + 1;
-      }
-      return prev;
-    });
-  };
-
-  const minCycle = () => {
-    setCycle((prev: number) => {
-      if (prev > 1) {
-        return prev - 1;
-      }
-      return prev;
-    });
-  };
-
-  const refreshTimer = () => {
-    setStart(false);
-    setRunST(screenTime * 60);
-    setRunBT(breakTime);
-    setRunCyc(0);
-  };
-
-  const showNotification = useCallback(() => {
-    if (notifPermission === "granted") {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.showNotification("Times Up!", {
-          body: `Times up!, Break time for ${breakTime} seconds`,
-          data: {
-            primaryKey: 1,
-          },
-          actions: [
-            {
-              action: "explore",
-              title: "Go to site",
-            },
-            {
-              action: "close",
-              title: "Ok",
-            },
-          ],
-        });
-      });
+  const onClickSetScreenTimeHandler = (ev: any) => {
+    if (ev.target.name === "add" && TimerConf.screenTime < 60) {
+      TimerConf.setScreenTime(TimerConf.screenTime + 5);
+    } else if (ev.target.name === "sub" && TimerConf.screenTime > 20) {
+      TimerConf.setScreenTime(TimerConf.screenTime - 5);
     }
-  }, [breakTime, notifPermission]);
+  };
+
+  const onClickSetBreakTimeHandler = (ev: any) => {
+    if (ev.target.name === "add" && TimerConf.breakTime < 60) {
+      TimerConf.setBreakTime(TimerConf.breakTime + 5);
+    } else if (ev.target.name === "sub" && TimerConf.breakTime > 20) {
+      TimerConf.setBreakTime(TimerConf.breakTime - 5);
+    }
+  };
+
+  const onClickSetCycleHandler = (ev: any) => {
+    if (ev.target.name === "add" && TimerConf.cycle < 5) {
+      TimerConf.setCycle(TimerConf.cycle + 1);
+    } else if (ev.target.name === "sub" && TimerConf.cycle > 1) {
+      TimerConf.setCycle(TimerConf.cycle - 1);
+    }
+  };
+
+  const onClickRefreshTimer = () => {
+    TimerConf.setSecondsLeft(TimerConf.screenTime * 60);
+    TimerConf.setMode("screen");
+    TimerConf.setCyclesLeft(0);
+    setIsPaused(true);
+  };
+
+  const TimerTick: Worker = useMemo(
+    () => new Worker(new URL("./TimerWorker.ts", import.meta.url)),
+    []
+  );
 
   useEffect(() => {
-    setRunST(screenTime * 60);
-    setRunBT(breakTime);
-  }, [screenTime, breakTime]);
+    if (window.Worker) {
+      TimerTick.postMessage("tick");
+    }
+  }, [TimerTick]);
 
   useEffect(() => {
-    Notification.requestPermission((result) => {
-      setNotifPermission(result);
-    });
-  }, []);
-
-  useEffect(() => {
-    let intvST: any;
-    let intvBT: any;
-    if (start) {
-      intvST = setInterval(() => {
-        if (runST > 0) {
-          setRunST((prev: number) => {
-            if (prev > 0) {
-              return prev - 1;
-            }
-            return prev;
-          });
-        } else {
-          clearInterval(intvST);
-        }
-      }, 1000);
-      intvBT = setInterval(() => {
-        if (runST === 0) {
-          setRunBT((prev: number) => {
-            if (prev > 0) {
-              return prev - 1;
-            }
-            return prev;
-          });
-          if (runBT === 0) {
-            clearInterval(intvBT);
+    if (window.Worker) {
+      TimerTick.onmessage = (e: MessageEvent<string>) => {
+        if (!isPaused) {
+          if (TimerConf.secondsLeft === 0 && TimerConf.mode === "screen") {
+            TimerConf.setMode("break");
+          } else if (
+            TimerConf.secondsLeft === 0 &&
+            TimerConf.mode === "break"
+          ) {
+            TimerConf.setMode("screen");
           }
+
+          TimerConf.setSecondsLeft((prevValue: any) => prevValue - 1);
         }
-      }, 1000);
+      };
     }
-
-    return () => {
-      clearInterval(intvST);
-      clearInterval(intvBT);
-    };
-  }, [start, runST, runBT]);
+  }, [TimerTick, TimerConf, isPaused]);
 
   useEffect(() => {
-    for (let i = 0; i <= cycle; i++) {
-      if (runBT === 0) {
-        setTimeout(() => {
-          setRunST(screenTime * 60);
-          setRunBT(breakTime);
-          setRunCyc(runCyc + 1);
-        }, 3000);
-      }
-      if (runCyc >= cycle) {
-        setStart(false);
-        setRunST(screenTime * 60);
-        setRunBT(breakTime);
-        setRunCyc(0);
-      }
+    if (TimerConf.mode === "screen") {
+      TimerConf.setSecondsLeft(TimerConf.screenTime * 60);
+    } else if (TimerConf.mode === "break") {
+      TimerConf.setSecondsLeft(TimerConf.breakTime);
     }
-  }, [runST, runBT, runCyc, screenTime, breakTime, cycle]);
+  }, [TimerConf.mode]);
 
   useEffect(() => {
-    if (runST === 0) {
-      showNotification();
-    }
-  }, [runST, showNotification]);
-
-  useEffect(() => {
-    if (runBT === 0) {
-      if (notifPermission === "granted") {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification("Break done", {
-            body: `Break done, Back to focus`,
-            data: {
-              primaryKey: 1,
-            },
-            actions: [
-              {
-                action: "explore",
-                title: "Go to site",
-              },
-              {
-                action: "close",
-                title: "Ok",
-              },
-            ],
-          });
-        });
+    if (TimerConf.cyclesLeft < TimerConf.cycle) {
+      if (TimerConf.mode === "break" && TimerConf.secondsLeft === 0) {
+        TimerConf.setCyclesLeft((prev: any) => prev + 1);
+        TimerConf.setMode("screen");
       }
+    } else {
+      TimerConf.setSecondsLeft(TimerConf.screenTime * 60);
+      setIsPaused(true);
     }
-  }, [runBT, notifPermission]);
-
-  useEffect(() => {
-    if (runCyc === cycle) {
-      if (notifPermission === "granted") {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification("Cycle completed!", {
-            body: `Cycle completed, total cycle ${cycle}`,
-            actions: [
-              {
-                action: "close",
-                title: "Close",
-              },
-            ],
-          });
-        });
-      }
-    }
-  }, [runCyc, cycle, notifPermission]);
+  }, [TimerConf.mode, TimerConf.secondsLeft]);
 
   return (
     <div className="min-h-screen bg-slate-800 p-12">
@@ -236,21 +113,21 @@ const TimerApp = () => {
                   <Input
                     type="text"
                     className="w-full text-2xl rounded-tr-none rounded-br-none"
-                    value={`${screenTime} minutes`}
+                    value={`${TimerConf.screenTime} minutes`}
                     readOnly
                   />
                   <div className="flex flex-col justify-center">
                     <Button
-                      onClick={addScreenTime}
+                      onClick={(ev) => onClickSetScreenTimeHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 rounded-tr-md"
-                      disabled={start ? true : false}
+                      name="add"
                     >
                       +
                     </Button>
                     <Button
-                      onClick={minScreenTime}
+                      onClick={(ev) => onClickSetScreenTimeHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 border-t-0 rounded-br-md"
-                      disabled={start ? true : false}
+                      name="sub"
                     >
                       -
                     </Button>
@@ -265,21 +142,21 @@ const TimerApp = () => {
                   <Input
                     type="text"
                     className="w-full text-2xl rounded-tr-none rounded-br-none"
-                    value={`${breakTime} seconds`}
+                    value={`${TimerConf.breakTime} seconds`}
                     readOnly
                   />
                   <div className="flex flex-col justify-center">
                     <Button
-                      onClick={addBreakTime}
+                      onClick={(ev) => onClickSetBreakTimeHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 rounded-tr-md"
-                      disabled={start ? true : false}
+                      name="add"
                     >
                       +
                     </Button>
                     <Button
-                      onClick={minBreakTime}
+                      onClick={(ev) => onClickSetBreakTimeHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 border-t-0 rounded-br-md"
-                      disabled={start ? true : false}
+                      name="sub"
                     >
                       -
                     </Button>
@@ -294,21 +171,21 @@ const TimerApp = () => {
                   <Input
                     type="text"
                     className="w-full text-2xl rounded-tr-none rounded-br-none"
-                    value={`${cycle} times`}
+                    value={`${TimerConf.cycle} times`}
                     readOnly
                   />
                   <div className="flex flex-col justify-center">
                     <Button
-                      onClick={addCycle}
+                      onClick={(ev) => onClickSetCycleHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 rounded-tr-md"
-                      disabled={start ? true : false}
+                      name="add"
                     >
                       +
                     </Button>
                     <Button
-                      onClick={minCycle}
+                      onClick={(ev) => onClickSetCycleHandler(ev)}
                       className="basis-[50%] py-1 border-2 border-l-0 border-t-0 rounded-br-md"
-                      disabled={start ? true : false}
+                      name="sub"
                     >
                       -
                     </Button>
@@ -318,54 +195,41 @@ const TimerApp = () => {
             </div>
             <div className="flex gap-4 self-center">
               <Button
-                onClick={() => setStart(!start)}
+                onClick={() => setIsPaused(!isPaused)}
                 className={`py-4 rounded-md ${
-                  start
+                  !isPaused
                     ? "bg-red-500 hover:bg-red-400"
                     : "bg-green-500 hover:bg-green-400"
                 } group`}
               >
-                {start ? (
+                {!isPaused ? (
                   <FiPause className="w-6 h-6 group-hover:scale-125 transition-all duration-300" />
                 ) : (
                   <FiPlay className="w-6 h-6 group-hover:scale-125 transition-all duration-300" />
                 )}
               </Button>
               <Button
-                onClick={refreshTimer}
+                onClick={onClickRefreshTimer}
                 className="py-2 rounded-md hover:bg-slate-600 group"
               >
                 <FiRefreshCw className="w-6 h-6 group-hover:scale-125 transition-all duration-300" />
               </Button>
             </div>
           </div>
-          <p className="text-7xl text-slate-200 text-center mt-8">
-            {runST === 0
-              ? `${
-                  Math.floor(runBT / 60).toString().length === 1 ? "0" : ""
-                }${Math.floor(runBT / 60)}:${
-                  (runBT % 60).toString().length === 1 ? "0" : ""
-                }${runBT % 60}`
-              : `${
-                  Math.floor(runST / 60).toString().length === 1 ? "0" : ""
-                }${Math.floor(runST / 60)}:${
-                  (runST % 60).toString().length === 1 ? "0" : ""
-                }${runST % 60}`}
+          <p className="text-2xl text-slate-200 text-center mt-8">
+            {TimerConf.mode === "screen" ? "Screen Time" : "Break Time"}
+          </p>
+          <p className="text-7xl text-slate-200 text-center mt-2">
+            <span>
+              {Math.floor(TimerConf.secondsLeft / 60)}:
+              {TimerConf.secondsLeft % 60 < 10 ? "0" : ""}
+              {TimerConf.secondsLeft % 60}
+            </span>
           </p>
           <p className="text-xl text-center text-slate-400 mt-4">
-            Cycle : {runCyc + 1}
+            Cycle : {TimerConf.cyclesLeft}
           </p>
-          <div
-            style={{
-              width:
-                runST === 0
-                  ? `${(runBT / breakTime) * 100}%`
-                  : `${(runST / (screenTime * 60)) * 100}%`,
-              transition: "all",
-              transitionDuration: runST === 0 ? "1000ms" : "1ms",
-            }}
-            className={`bg-slate-200 h-4 mt-6 mx-auto`}
-          ></div>
+          <div className={`bg-slate-200 h-4 mt-6 mx-auto`}></div>
         </main>
       </div>
     </div>
